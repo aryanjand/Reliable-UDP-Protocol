@@ -58,3 +58,23 @@ This project is a pairs assignment for COMP 7005. If you intend to work alone, y
 
 ### Resources
 - Provide references to UDP and TCP documentation, socket programming tutorials, and any libraries or tools used for graph generation.
+
+Project Structure
+
+udp_reliable/
+│
+├── client/
+│   ├── __init__.py
+│   └── client.py
+│
+├── server/
+│   ├── __init__.py
+│   └── server.py
+│
+├── proxy/
+│   ├── __init__.py
+│   └── proxy.py
+│
+└── utils/
+    ├── __init__.py
+    └── packet.py
