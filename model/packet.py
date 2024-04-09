@@ -7,6 +7,7 @@ def generate_id():
     """
     return 1
 
+
 class Packet:
     def __init__(self, seq_num, ack_num, data):
         self.seq_num = seq_num

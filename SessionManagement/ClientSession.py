@@ -20,12 +20,11 @@ class ClientSession(Session):
                 packet, address = self._get_syn_ack()
                 if packet.operation == SYN_ACK:
                     self._sent_ack()
-                    self.session = ClientSession(self.address, initial_seq_number, packet.seq_number, self.socket)
+                    self.session = ClientSession(
+                        self.address, initial_seq_number, packet.seq_number, self.socket
+                    )
                     print("Connection established")
                     break
             except socket.timeout as e:
                 if attempts >= self.syn_attempts:
                     raise Exception("Connection failure: timeout error")
-    
-    
-

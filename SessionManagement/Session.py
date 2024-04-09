@@ -11,7 +11,7 @@ class Session:
         # self.socket.send(self.address, bytes(syn_packet))
         # self.socket.set_timeout(self.syn_timeout)
         pass
-    
+
     def _get_syn_ack():
         pass
 
