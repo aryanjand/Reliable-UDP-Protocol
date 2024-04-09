@@ -1,5 +1,5 @@
 from Session import Session
-from ..model.packet import Packet, generate_id
+from ..Model.packet import Packet, generate_id
 
 
 class ClientSession(Session):

@@ -1,9 +1,9 @@
 import os
 import struct
 from UDPNetworking.ReliableUDPClient import ReliableUDPClient
-from model.packet import Packet
-from utils.argument_parser import parse_arguments
-from utils.file_operations import open_file, read_file_in_chunks
+from Model.packet import Packet
+from Utils.argument_parser import parse_arguments
+from Utils.file_operations import open_file, read_file_in_chunks
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from socket import socket, AF_INET, SOCK_DGRAM
-from model.packet import Packet
+from Model.packet import Packet
 
 BUFF_SIZE = 1024
 
