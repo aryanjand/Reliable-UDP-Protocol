@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_DGRAM
-from Model.packet import Packet
+from Model.Packet import Packet
+import pickle
 
 BUFF_SIZE = 1024
 
@@ -15,10 +16,12 @@ class ReliableUDPServer:
     def receive(self) -> str:
         try:
             bytes_received, address = self.socket.recvfrom(BUFF_SIZE)
-            message = bytes_received.decode()
+            packet = pickle.loads(bytes_received)
             print(f"Client IP Address: {address}")
-            print(f"Message from Client: {message}")
-            return message
+            print(
+                f"Packet from Server: {packet} {packet.seq_num} {packet.ack_num} {packet.flags} {packet.data}"
+            )
+            return packet
         except Exception as e:
             print(f"Error receiving message: {e}")
             return ""
