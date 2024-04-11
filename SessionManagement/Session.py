@@ -1,4 +1,6 @@
 from Model.UDPSocket import UDPSocket
+from Model.Packet import Packet
+from Utils.serializer import serialize, deserialize
 
 
 class Session:
@@ -43,7 +45,7 @@ class Session:
         self.server_port: int = address[1]
         self.udp_socket.bind(address)
 
-    def send(self, data: bytes):
+    def reliability_send(self, data: bytes):
         """
         Need to reliability features in here. Receive ACK and timeout.
         Send data over the session with reliability features.
@@ -55,7 +57,7 @@ class Session:
         # Receive ACK
         self.seq_number += 1
 
-    def receive(self) -> tuple:
+    def reliability_receive(self) -> tuple:
         """
         Need to reliability features in here.
         Receive data from the session with reliability features.
@@ -65,6 +67,38 @@ class Session:
         - address: The address (ip, port) from which the data was received.
         """
         return self.udp_socket.recvfrom()
+
+    def send_packet(self, flags: tuple, address: tuple, data: bytes = None) -> None:
+        """
+        Send a packet over the session with reliability features.
+
+        Args:
+        - flags: The flags for the packet.
+        - data: The data to be sent, in bytes.
+        """
+        packet = Packet(self.seq_number, self.ack_number, flags, data)
+        packet_serialize = serialize(packet)
+        self.udp_socket.sendto(packet_serialize, address)
+        print(f"Sent {flags} Packet")
+
+    def receive_packet(self, flags: tuple) -> tuple:
+        """
+        Receive a packet from the session with reliability features.
+
+        Args:
+        - flags: The expected flags for the received packet.
+
+        Returns:
+        - packet: The received packet.
+        - client_address: The address (ip, port) from which the data was received.
+        """
+        bytes_received, client_address = self.udp_socket.recvfrom()
+        packet: Packet = deserialize(bytes_received)
+        print(f"Received: {packet.flags} Packet. Data: {packet.data}")
+        if packet.flags == flags:
+            return (packet, client_address)
+        else:
+            raise ValueError(f"Received packet with unexpected flags {packet.flags}")
 
     def close(self):
         self._teardown()

@@ -1,6 +1,6 @@
-import pickle
 from .Session import Session
 from Model.Packet import Packet
+from Model.TCPFlags import TCPFlag
 
 
 class ServerConnectionToClient(Session):
@@ -23,32 +23,17 @@ class ServerConnectionToClient(Session):
         pass
 
     def accept(self):
-        print("Checking SYN packet")
-        bytes_received, client_address = self.receive()
-        packet: Packet = pickle.loads(bytes_received)
-        print(f"Got SYN packet {self._check_syn(packet)}")
-        if self._check_syn(packet):
-            self._send_synack(client_address)
-            print(f"Sent SYN/ACK packet")
-            while True:
-                bytes_received, _ = self.receive()
-                packet: Packet = pickle.loads(bytes_received)
-                if self._check_ack(packet):
-                    print(f"Got SYN packet {self._check_ack(packet)}")
-                    self.client_address, self.client_port = client_address
-                    break
-
-    def _send_synack(self, address: tuple):
+        # receive SYN
+        packet: Packet
+        packet, address = self.receive_packet((TCPFlag.SYN))
         self.client_address, self.client_port = address
-        packet = Packet(2, 1, None)
-        packet.set_flag((2, 5))
-        self.udp_socket.sendto(pickle.dumps(packet), address)
-
-    def _check_syn(self, packet: Packet):
-        return packet.flags == (2)
-
-    def _check_ack(self, packet: Packet):
-        return packet.flags == (5)
-
-    # def receive(self, buffer_size) -> bytes:
-    #     return self.server_socket.recvfrom(buffer_size)
+        if (TCPFlag.SYN) == packet.flags:
+            # sent SYN, ACK
+            self.send_packet(
+                (TCPFlag.SYN, TCPFlag.ACK), (self.client_address, self.client_port)
+            )
+            while True:
+                # receive ACK
+                packet, address = self.receive_packet((TCPFlag.ACK))
+                if (TCPFlag.ACK) == packet.flags:
+                    break

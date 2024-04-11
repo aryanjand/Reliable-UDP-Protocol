@@ -22,8 +22,7 @@ if __name__ == "__main__":
 
     seq_num = 0  # Initial sequence number
     for chunk in read_file_in_chunks(file):
-        packet = Packet(seq_num, 0, chunk)
-        packet.set_flag(4)
+        packet = Packet(seq_num, 0, (2), chunk)
         client.send(pickle.dumps(packet))
         seq_num += 1  # Increment sequence number for each chunk
     print("File Data Sent")
