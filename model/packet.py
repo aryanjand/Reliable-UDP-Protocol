@@ -10,4 +10,4 @@ class Packet:
         self.seq_num: int = seq_num
         self.ack_num: int = ack_num
         self.flags: tuple = flags
-        self.data = data
+        self.data: str = data

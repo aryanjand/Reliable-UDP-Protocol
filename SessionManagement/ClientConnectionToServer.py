@@ -6,25 +6,23 @@ import pickle
 class ClientConnectionToServer(Session):
     def __init__(self):
         super().__init__()
-        self.initial_seq_number = None
-        self.syn_attempts = 5
+        self.initial_seq_number: int = None
+        self.syn_attempts: int = 5
 
     def connect(self, address: str, port: int):
         #  data validation
-        self.server_port = port
         self.server_address = address
+        self.server_port = port
         # self.socket.bind()
         self._three_way_handshake()
 
-        pass
 
     def _three_way_handshake(self):
 
         # Sent SYN packet
         self.initial_seq_number = self.seq_number = generate_id()
         self.ack_number = 0
-        packet = Packet(self.seq_number, self.ack_number, None)
-        packet.set_flag((2))
+        packet = Packet(self.seq_number, self.ack_number, (2), None)
         self.udp_socket.sendto(
             # Note this takes in bytes
             pickle.dumps(packet),

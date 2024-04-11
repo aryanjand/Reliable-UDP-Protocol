@@ -1,6 +1,6 @@
 import os
 import struct
-from UDPNetworking.ReliableUDPClient import ReliableUDPClient
+from UDPNetworking.UnreliableUDPClient import ReliableUDPClient
 from Model.Packet import Packet
 import pickle
 from Utils.argument_parser import parse_arguments
