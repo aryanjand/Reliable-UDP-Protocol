@@ -46,7 +46,7 @@ class UDPProxy:
     def get_client_request(self) -> bytes:
         bytes_received, client_address = self.socket.recvfrom()
         self.client_address = client_address
-        return bytes_received
+        return (bytes_received, client_address)
 
     def unreliable_forward(self, data, address: tuple):
         forward_address = self.get_forward_address(address)
