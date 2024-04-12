@@ -1,4 +1,4 @@
-from UDPNetworking.ReliableUDPServer import ReliableUDPServer
+from UDPNetworking.UnreliableUDPServer import ReliableUDPServer
 
 if __name__ == "__main__":
     server = ReliableUDPServer("localhost", 8080)

@@ -9,10 +9,8 @@ class ReliableUDPClient:
         self._server_port = server_port
         self._socket = socket(AF_INET, SOCK_DGRAM)
 
-    def send(self, data: any) -> None:
-        if not isinstance(data, str):
-            raise TypeError("Data must be a string")
-        self._socket.sendto(data.encode(), (self._server_address, self._server_port))
+    def send(self, data: bytes) -> None:
+        self._socket.sendto(data, (self._server_address, self._server_port))
 
     def receive(self) -> str:
         msg_from_server, _ = self._socket.recvfrom(BUFF_SIZE)
