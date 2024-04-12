@@ -4,6 +4,8 @@ from Utils.file_operations import open_file, read_file_in_chunks
 
 
 if __name__ == "__main__":
+
+    print("TCP like Client Started!\n")
     args = parse_arguments()
     server_ip_address = args.ip_address
     server_port = args.port

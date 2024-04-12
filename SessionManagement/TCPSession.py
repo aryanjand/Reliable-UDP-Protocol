@@ -36,6 +36,20 @@ class TCPSession(ABC):
         self.ack_number: int = None
         # implement timer
 
+    @abstractmethod
+    def shutdown(self) -> None:
+        """
+        Shutdown the TCP session.
+        """
+        pass
+
+    @abstractmethod
+    def _teardown(self) -> None:
+        """
+        Perform the teardown process for the TCP session.
+        """
+        pass
+
     def bind(self, address: tuple):
         """
         Bind the session to a specified address.
@@ -99,28 +113,14 @@ class TCPSession(ABC):
             f"Check Server for Client Address {client_address}"
         )  # Debugging: Missing Client Address
         packet: Packet = deserialize(bytes_received)
-        print(f"Received: {packet.flags} Packet. Data: {packet.data}")
+        print(f"Received: {packet.flags} Packet.")
         if packet.flags == flags:
             return (packet, client_address)
         else:
             raise ValueError(f"Received packet with unexpected flags {packet.flags}")
 
-    @abstractmethod
-    def shutdown(self) -> None:
-        """
-        Shutdown the TCP session.
-        """
-        pass
-
     def close(self) -> None:
         """
         Close the TCP session.
-        """
-        pass
-
-    @abstractmethod
-    def _teardown(self) -> None:
-        """
-        Perform the teardown process for the TCP session.
         """
         pass

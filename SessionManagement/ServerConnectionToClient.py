@@ -36,10 +36,12 @@ class ServerConnectionToClient(TCPSession):
                 # receive ACK
                 packet, address = self.receive_packet((TCPFlag.ACK))
                 if (TCPFlag.ACK) == packet.flags:
+                    print("\n\nConnection established\n\n")
                     break
 
     def shutdown(self) -> None:
         self._teardown()
+        print("\n\nConnection Ended\n\n")
 
     def _teardown(self) -> None:
         """
