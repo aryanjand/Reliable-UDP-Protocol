@@ -51,25 +51,18 @@ class UDPProxy:
     def unreliable_forward(self, data, address: tuple):
         forward_address = self.get_forward_address(address)
         if self.should_drop_packet(address):
+            print(f"Packet dropped from {address} ({'Server' if address == self.server_address else 'Client'})")
             return
         if self.should_delay_packet(address):
-            self.delay_packet(data, forward_address)
-        else:
-            self.socket.sendto(data, forward_address)
+            print(f"Packet delayed from {address} ({'Server' if address == self.server_address else 'Client'})")
+            self.delay_packet(forward_address)
+        print(f"Forwarding packet from {address} ({'Server' if address == self.server_address else 'Client'}) "
+            f"to {forward_address} ({'Server' if forward_address == self.server_address else 'Client'})")
+        self.socket.sendto(data, forward_address)
+
 
     def delay_packet(self, address: tuple):
-        if self.should_delay_packet(address):
-            time.sleep(self.get_delay_time(address))
-
-    def send_client_or_server(self, client_or_server: str, data: bytes):
-        self.socket.sendto(
-            data,
-            (
-                self.server_address
-                if client_or_server == "server"
-                else self.client_address
-            ),
-        )
+        time.sleep(self.get_delay_time(address))
 
     def should_drop_packet(self, address: tuple) -> bool:
         return random.random() < (
