@@ -1,9 +1,9 @@
-from .Session import Session
+from .TCPSession import TCPSession
 from Model.Packet import Packet
 from Model.TCPFlags import TCPFlag
 
 
-class ServerConnectionToClient(Session):
+class ServerConnectionToClient(TCPSession):
     def __init__(self):
         super().__init__()
         self.client_address = None
@@ -37,3 +37,18 @@ class ServerConnectionToClient(Session):
                 packet, address = self.receive_packet((TCPFlag.ACK))
                 if (TCPFlag.ACK) == packet.flags:
                     break
+
+    def shutdown(self) -> None:
+        self._teardown()
+
+    def _teardown(self) -> None:
+        """
+        Perform the teardown process for the TCP session.
+
+        Args:
+        - is_client_initiator: True if the client is initiating the teardown, False otherwise.
+        """
+        self.receive_packet((TCPFlag.FIN))  # returns server address
+        self.send_packet((TCPFlag.ACK), (self.client_address, self.client_port))
+        self.send_packet((TCPFlag.FIN), (self.client_address, self.client_port))
+        self.receive_packet((TCPFlag.ACK))  # returns server address

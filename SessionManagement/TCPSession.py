@@ -1,9 +1,11 @@
 from Model.UDPSocket import UDPSocket
 from Model.Packet import Packet
+from Model.TCPFlags import TCPFlag
 from Utils.serializer import serialize, deserialize
+from abc import ABC, abstractmethod
 
 
-class Session:
+class TCPSession(ABC):
     """
     A class that creates a TCP-like session using UDP, providing reliability features.
 
@@ -93,6 +95,9 @@ class Session:
         - client_address: The address (ip, port) from which the data was received.
         """
         bytes_received, client_address = self.udp_socket.recvfrom()
+        print(
+            f"Check Server for Client Address {client_address}"
+        )  # Debugging: Missing Client Address
         packet: Packet = deserialize(bytes_received)
         print(f"Received: {packet.flags} Packet. Data: {packet.data}")
         if packet.flags == flags:
@@ -100,8 +105,22 @@ class Session:
         else:
             raise ValueError(f"Received packet with unexpected flags {packet.flags}")
 
-    def close(self):
-        self._teardown()
+    @abstractmethod
+    def shutdown(self) -> None:
+        """
+        Shutdown the TCP session.
+        """
+        pass
 
-    def _teardown(self):
+    def close(self) -> None:
+        """
+        Close the TCP session.
+        """
+        pass
+
+    @abstractmethod
+    def _teardown(self) -> None:
+        """
+        Perform the teardown process for the TCP session.
+        """
         pass

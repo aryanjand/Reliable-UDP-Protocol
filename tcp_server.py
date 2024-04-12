@@ -7,4 +7,5 @@ if __name__ == "__main__":
     server.listen(5)
     server.accept()
 
+    server.shutdown()
     server.close()
