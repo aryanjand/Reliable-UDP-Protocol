@@ -16,8 +16,19 @@ import time
 CLIENT = 0
 SERVER = 1
 
+
 class UDPProxy:
-    def __init__(self, client_drop: float, server_drop: float, client_delay_chance: float, server_delay_chance: float, client_delay_range: tuple, server_delay_range: tuple, server_address: tuple, proxy_address: tuple):
+    def __init__(
+        self,
+        client_drop: float,
+        server_drop: float,
+        client_delay_chance: float,
+        server_delay_chance: float,
+        client_delay_range: tuple,
+        server_delay_range: tuple,
+        server_address: tuple,
+        proxy_address: tuple,
+    ):
         self.client_drop = client_drop
         self.server_drop = server_drop
         self.client_delay_chance = client_delay_chance
@@ -28,16 +39,16 @@ class UDPProxy:
         self.proxy_address = proxy_address
         self.client_address = None
         self.socket: UDPSocket = UDPSocket()
-    
+
     def bind(self):
         self.socket.bind(self.proxy_address)
-    
+
     def get_client_request(self) -> bytes:
         bytes_received, client_address = self.socket.recvfrom()
         self.client_address = client_address
         return bytes_received
 
-    def unreliable_forward(self, data, address: tuple ):
+    def unreliable_forward(self, data, address: tuple):
         forward_address = self.get_forward_address(address)
         if self.should_drop_packet(address):
             return
@@ -51,17 +62,37 @@ class UDPProxy:
             time.sleep(self.get_delay_time(address))
 
     def send_client_or_server(self, client_or_server: str, data: bytes):
-        self.socket.sendto(data, self.server_address if client_or_server == "server" else self.client_address)
+        self.socket.sendto(
+            data,
+            (
+                self.server_address
+                if client_or_server == "server"
+                else self.client_address
+            ),
+        )
 
-    
     def should_drop_packet(self, address: tuple) -> bool:
-        return random.random() < (self.server_drop if address == self.server_address else self.client_drop)
-    
+        return random.random() < (
+            self.server_drop if address == self.server_address else self.client_drop
+        )
+
     def should_delay_packet(self, address: tuple) -> bool:
-        return random.random() < (self.server_delay_chance if address == self.server_address else self.client_delay_chance)
-    
+        return random.random() < (
+            self.server_delay_chance
+            if address == self.server_address
+            else self.client_delay_chance
+        )
+
     def get_delay_time(self, address: tuple):
-        return random.uniform(self.client_delay_range[0], self.client_delay_range[1]) if address == self.client_address else  random.uniform(self.server_delay_range[0], self.server_delay_range[1])
-    
+        return (
+            random.uniform(self.client_delay_range[0], self.client_delay_range[1])
+            if address == self.client_address
+            else random.uniform(self.server_delay_range[0], self.server_delay_range[1])
+        )
+
     def get_forward_address(self, address: tuple) -> tuple:
-        return self.server_address if self.client_address == address else self.client_address
+        return (
+            self.server_address
+            if self.client_address == address
+            else self.client_address
+        )
