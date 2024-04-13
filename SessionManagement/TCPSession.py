@@ -1,6 +1,5 @@
 from Model.UDPSocket import UDPSocket
 from Model.Packet import Packet
-from Model.TCPFlags import TCPFlag
 from Utils.serializer import serialize, deserialize
 from abc import ABC, abstractmethod
 from typing import Tuple

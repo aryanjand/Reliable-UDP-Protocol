@@ -24,4 +24,4 @@ if __name__ == "__main__":
             target=proxy.unreliable_forward, args=(data_bytes, address)
         )
         thread.start()
-        data_bytes, address = proxy.socket.recvfrom()
+        data_bytes, address = proxy.udp_socket.recvfrom()
