@@ -1,7 +1,7 @@
 from argparse import Namespace, ArgumentParser
 
 
-def client_parse_arguments() -> Namespace:
+def _client_parse_arguments() -> Namespace:
     parser = ArgumentParser(description="Process some integers.")
     parser.add_argument("ip_address", type=str, help="IP address of the server")
     parser.add_argument("port", type=int, help="Port number of the server")
@@ -9,7 +9,7 @@ def client_parse_arguments() -> Namespace:
     return parser.parse_args()
 
 
-def proxy_parse_arguments() -> Namespace:
+def _proxy_parse_arguments() -> Namespace:
     parser = ArgumentParser(description="Process some integers.")
 
     parser.add_argument("proxy_ip_address", type=str, help="IP address of the proxy")
@@ -59,8 +59,34 @@ def proxy_parse_arguments() -> Namespace:
     return parser.parse_args()
 
 
-def server_parse_arguments() -> Namespace:
+def _server_parse_arguments() -> Namespace:
     parser = ArgumentParser(description="Process some integers.")
     parser.add_argument("ip_address", type=str, help="IP address of the server")
     parser.add_argument("port", type=int, help="Port number of the server")
     return parser.parse_args()
+
+
+def proxy_parse_arguments():
+    args = _proxy_parse_arguments()
+    return (
+        args.proxy_ip_address,
+        args.proxy_port,
+        args.server_ip_address,
+        args.server_port,
+        args.client_drop,
+        args.server_drop,
+        args.client_delay_chance,
+        args.server_delay_chance,
+        args.client_delay_range,
+        args.server_delay_range,
+    )
+
+
+def server_parse_arguments():
+    args = _server_parse_arguments()
+    return (args.ip_address, args.port)
+
+
+def client_parse_arguments():
+    args = _client_parse_arguments()
+    return (args.ip_address, args.port, args.file_path)
