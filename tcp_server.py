@@ -5,7 +5,9 @@ if __name__ == "__main__":
     server = ServerConnectionToClient()
     server.bind(("127.0.0.1", 8000))
     server.listen(5)
-    server.accept()
+    # server.accept()
+    while True:
+        packet = server.reliability_receive()
 
     server.shutdown()
     server.close()

@@ -4,13 +4,7 @@ import random
 import time
 
 # TODO
-# Implement proxy
-# Options needed: % Chance to drop packets from client
-#                 % Chance to drop packets from server
-#                 % Chance to add delay to client packets
-#                 % Chance to add delay to server packets
-#                 Range (min/max) in milliseconds to delay a packet from client
-#                 Range (min/max) in milliseconds to delay a packet from server
+# Clean Code
 # Parse the options and operate as necessary
 
 CLIENT = 0
@@ -51,15 +45,20 @@ class UDPProxy:
     def unreliable_forward(self, data, address: tuple):
         forward_address = self.get_forward_address(address)
         if self.should_drop_packet(address):
-            print(f"Packet dropped from {address} ({'Server' if address == self.server_address else 'Client'})")
+            print(
+                f"Packet dropped from {address} ({'Server' if address == self.server_address else 'Client'})"
+            )
             return
         if self.should_delay_packet(address):
-            print(f"Packet delayed from {address} ({'Server' if address == self.server_address else 'Client'})")
+            print(
+                f"Packet delayed from {address} ({'Server' if address == self.server_address else 'Client'})"
+            )
             self.delay_packet(forward_address)
-        print(f"Forwarding packet from {address} ({'Server' if address == self.server_address else 'Client'}) "
-            f"to {forward_address} ({'Server' if forward_address == self.server_address else 'Client'})")
+        print(
+            f"Forwarding packet from {address} ({'Server' if address == self.server_address else 'Client'}) "
+            f"to {forward_address} ({'Server' if forward_address == self.server_address else 'Client'})"
+        )
         self.socket.sendto(data, forward_address)
-
 
     def delay_packet(self, address: tuple):
         time.sleep(self.get_delay_time(address))
