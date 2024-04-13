@@ -1,4 +1,4 @@
-def generate_id():
+def generate_id() -> int:
     """
     When we add multiple client connections, make it a random id.
     """

@@ -3,6 +3,7 @@ from Model.Packet import Packet
 from Model.TCPFlags import TCPFlag
 from Utils.serializer import serialize, deserialize
 from abc import ABC, abstractmethod
+from typing import Tuple
 
 
 class TCPSession(ABC):
@@ -32,8 +33,8 @@ class TCPSession(ABC):
         self.udp_socket: UDPSocket = UDPSocket()
         self.server_address: str = None
         self.server_port: int = None
-        self.seq_number: int = None
-        self.ack_number: int = None
+        self.seq_num: int = None
+        self.ack_num: int = None
         # implement timer
 
     @abstractmethod
@@ -60,29 +61,15 @@ class TCPSession(ABC):
         self.server_address: str = address[0]
         self.server_port: int = address[1]
         self.udp_socket.bind(address)
+        self.udp_socket.set_timeout_time(1)
 
-    def reliability_send(self, data: bytes):
-        """
-        Need to reliability features in here. Receive ACK and timeout.
-        Send data over the session with reliability features.
+    @abstractmethod
+    def reliability_send(self, data: bytes) -> None:
+        pass
 
-        Args:
-        - data: The data to be sent, in bytes.
-        """
-        self.udp_socket.sendto(data, (self.server_address, self.server_port))
-        # Receive ACK
-        self.seq_number += 1
-
+    @abstractmethod
     def reliability_receive(self) -> tuple:
-        """
-        Need to reliability features in here.
-        Receive data from the session with reliability features.
-
-        Returns:
-        - bytes_received: The received bytes of data.
-        - address: The address (ip, port) from which the data was received.
-        """
-        return self.udp_socket.recvfrom()
+        pass
 
     def send_packet(self, flags: tuple, address: tuple, data: bytes = None) -> None:
         """
@@ -92,12 +79,12 @@ class TCPSession(ABC):
         - flags: The flags for the packet.
         - data: The data to be sent, in bytes.
         """
-        packet = Packet(self.seq_number, self.ack_number, flags, data)
+        packet = Packet(self.seq_num, self.ack_num, flags, data)
         packet_serialize = serialize(packet)
         self.udp_socket.sendto(packet_serialize, address)
         print(f"Sent {flags} Packet")
 
-    def receive_packet(self, flags: tuple) -> tuple:
+    def receive_packet(self, flags: tuple) -> Tuple[Packet, tuple]:
         """
         Receive a packet from the session with reliability features.
 
@@ -108,14 +95,12 @@ class TCPSession(ABC):
         - packet: The received packet.
         - client_address: The address (ip, port) from which the data was received.
         """
-        bytes_received, client_address = self.udp_socket.recvfrom()
-        print(
-            f"Check Server for Client Address {client_address}"
-        )  # Debugging: Missing Client Address
+        bytes_received, address = self.udp_socket.recvfrom()
+        print(f"Client or Server Address {address}")
         packet: Packet = deserialize(bytes_received)
         print(f"Received: {packet.flags} Packet.")
         if packet.flags == flags:
-            return (packet, client_address)
+            return (packet, address)
         else:
             raise ValueError(f"Received packet with unexpected flags {packet.flags}")
 

@@ -37,7 +37,30 @@ class ServerConnectionToClient(TCPSession):
                 packet, address = self.receive_packet((TCPFlag.ACK))
                 if (TCPFlag.ACK) == packet.flags:
                     print("\n\nConnection established\n\n")
+                    self.seq_num = 0
+                    self.ack_num = 0
                     break
+
+    def reliability_receive(self) -> Packet | None:
+        packet, _ = self.receive_packet((TCPFlag.PSH))
+        #
+        # ***TESTING ONLY***
+        #
+        self.client_address, self.client_port = _
+        self.seq_num = 0
+        self.ack_num = 0
+        #
+        # ***TESTING ONLY***
+        #
+        if packet.seq_num == (self.seq_num + 1) and packet.ack_num == self.ack_num:
+            self.ack_num += 1
+            self.send_packet((TCPFlag.ACK), (self.client_address, self.client_port))
+            return packet
+        self.send_packet((TCPFlag.ACK), (self.client_address, self.client_port))
+        return
+
+    def reliability_send(self, data: bytes) -> None:
+        pass
 
     def shutdown(self) -> None:
         self._teardown()

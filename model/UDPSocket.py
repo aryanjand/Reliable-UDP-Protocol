@@ -36,6 +36,7 @@ class UDPSocket:
         - address: The address (ip, port) to send the data to.
         """
         self._socket.sendto(data, address)
+        return
 
     def recvfrom(self) -> tuple:
         """
@@ -48,7 +49,14 @@ class UDPSocket:
         bytes_received, address = self._socket.recvfrom(BUFF_SIZE)
         return (bytes_received, address)
 
-    def bind(self, address: tuple):
+    def timeout(self):
+        return self._socket.timeout
+
+    def set_timeout_time(self, time: float) -> None:
+        self._socket.settimeout(time)
+        return
+
+    def bind(self, address: tuple) -> None:
         """
         Bind the UDP socket to a specified address.
 
@@ -56,6 +64,7 @@ class UDPSocket:
         - address: The address (ip, port) to bind the socket to.
         """
         self._socket.bind(address)
+        return
 
     def read(self) -> None:
         pass
@@ -69,5 +78,6 @@ class UDPSocket:
         """
         try:
             self._socket.close()
+            return
         except OSError as e:
             print(f"Error closing socket: {e}")
