@@ -15,8 +15,6 @@ if __name__ == "__main__":
         ("127.0.0.1", 8080),
     )
     proxy.bind()
-    address: tuple
-    data_bytes: bytes
     data_bytes, address = proxy.get_client_request()
     print(f"Client Address: {address}")
     while True:

@@ -54,17 +54,17 @@ class UDPProxy:
         self.udp_socket: UDPSocket = UDPSocket()
         self.client_address = None
 
-    def bind(self):
+    def bind(self) -> None:
         self.udp_socket.bind(self.config.proxy_address)
+        return
 
-    def get_client_request(self) -> bytes:
+    def get_client_request(self) -> Tuple[bytes, tuple]:
         bytes_received, client_address = self.udp_socket.recvfrom()
         self.client_address = client_address
         return (bytes_received, client_address)
 
-    def unreliable_forward(self, data, address: tuple):
+    def unreliable_forward(self, data, address: tuple) -> None:
         forward_address, destination = self.get_forward_address(address)
-
         if self.should_drop_packet(destination):
             print(
                 f"Packet dropped from {address} ({'Server' if destination != SERVER else 'Client'})"
@@ -80,6 +80,7 @@ class UDPProxy:
             f"to {forward_address} ({'Server' if destination != SERVER else 'Client'})"
         )
         self.udp_socket.sendto(data, forward_address)
+        return
 
     def delay_packet(self, destination: tuple) -> None:
         time.sleep(self.get_delay_time(destination))
@@ -99,7 +100,7 @@ class UDPProxy:
             else self.config.client_delay_chance
         )
 
-    def get_delay_time(self, destination: int):
+    def get_delay_time(self, destination: int) -> float:
         return (
             random.uniform(
                 self.config.server_delay_range[0], self.config.server_delay_range[1]

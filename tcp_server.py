@@ -6,8 +6,10 @@ if __name__ == "__main__":
     server.bind(("127.0.0.1", 8000))
     server.listen(5)
     # server.accept()
+
     while True:
         packet = server.reliability_receive()
 
-    server.shutdown()
+    server.reliability_send()
+    # server.shutdown()
     server.close()

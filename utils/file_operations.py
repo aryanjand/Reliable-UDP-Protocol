@@ -1,7 +1,8 @@
 # file_operations.py
+from typing import IO, Any
 
 
-def read_file_in_chunks(file_descriptor, chunk_size=25 * 1024 * 1024):
+def read_file_in_chunks(file_descriptor, chunk_size=25 * 1024 * 1024) -> bytes:
     """Read a file in incremental chunks."""
     while True:
         chunk = file_descriptor.read(chunk_size)
@@ -16,7 +17,7 @@ def write_file(file_descriptor, data, chunk_size=25 * 1024 * 1024):
         file_descriptor.write(data[i : i + chunk_size])
 
 
-def open_file(file_path, mode="r"):
+def open_file(file_path, mode="r") -> IO[Any] | None:
     """Open a file and return the file object."""
     try:
         file = open(file_path, mode)

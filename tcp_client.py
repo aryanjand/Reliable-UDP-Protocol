@@ -16,10 +16,11 @@ if __name__ == "__main__":
     client = ClientConnectionToServer()
     client.connect(server_ip_address, server_port)
 
-
     for chunk in read_file_in_chunks(file):
         client.reliability_send(chunk)
     print("File Data Sent")
+
+    client.reliability_receive()
 
     file.close()
     client.shutdown()
