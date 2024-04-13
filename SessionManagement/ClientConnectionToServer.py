@@ -20,9 +20,8 @@ class ClientConnectionToServer(TCPSession):
         self.server_address = address
         self.server_port = port
         self.udp_socket.set_timeout_time(1)
-        self.seq_num = 1  # TESTING
-        self.ack_num = 0  # TESTING
-        # self._three_way_handshake() : TESTING
+        self._set_sequence_and_ack_numbers()  # TESTING
+        # self._three_way_handshake() # TESTING
 
     def _three_way_handshake(self):
         attempts = 0
@@ -35,14 +34,14 @@ class ClientConnectionToServer(TCPSession):
             if packet.flags == SYN_ACK:
                 self.send_packet(ACK, server_address)
                 print("\n\nConnection established\n\n")
-                self.seq_num = 1
-                self.ack_num = 0
+                self._set_sequence_and_ack_numbers()
                 break
 
     def reliability_send(self, data: bytes) -> None:
+        server_address = (self.server_address, self.server_port)
         while True:
             try:
-                self.send_packet(PSH, (self.server_address, self.server_port), data)
+                self.send_packet(PSH, server_address, data)
                 packet, _ = self.receive_packet(ACK)
 
             except TimeoutError:
@@ -68,8 +67,13 @@ class ClientConnectionToServer(TCPSession):
         Args:
         None
         """
-        self.send_packet(FIN, (self.server_address, self.server_port))
+        server_address = (self.server_address, self.server_port)
+        self.send_packet(FIN, server_address)
         self.receive_packet(ACK)  # returns server address
         self.receive_packet(FIN)  # returns server address
-        self.send_packet(ACK, (self.server_address, self.server_port))
+        self.send_packet(ACK, server_address)
         return
+
+    def _set_sequence_and_ack_numbers(self):
+        self.seq_num = 1
+        self.ack_num = 0
