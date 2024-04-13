@@ -2,6 +2,12 @@ from .TCPSession import TCPSession
 from Model.Packet import Packet, generate_id
 from Model.TCPFlags import TCPFlag
 
+SYN = (TCPFlag.SYN,)
+SYN_ACK = (TCPFlag.SYN, TCPFlag.ACK)
+ACK = (TCPFlag.ACK,)
+PSH = (TCPFlag.PSH,)
+FIN = (TCPFlag.FIN,)
+
 
 class ClientConnectionToServer(TCPSession):
     def __init__(self):
@@ -14,30 +20,29 @@ class ClientConnectionToServer(TCPSession):
         self.server_address = address
         self.server_port = port
         self.udp_socket.set_timeout_time(1)
-        # self._three_way_handshake() : TESTING
+        self._set_sequence_and_ack_numbers()  # TESTING
+        # self._three_way_handshake() # TESTING
 
     def _three_way_handshake(self):
         attempts = 0
-        self.send_packet((TCPFlag.SYN), (self.server_address, self.server_port))
+        server_address = (self.server_address, self.server_port)
+        self.send_packet(SYN, server_address)
 
         while attempts < self.syn_attempts:
             attempts += 1
-            packet: Packet
-            packet, _ = self.receive_packet((TCPFlag.SYN, TCPFlag.ACK))
-            if packet.flags == (TCPFlag.SYN, TCPFlag.ACK):
-                self.send_packet((TCPFlag.ACK), (self.server_address, self.server_port))
+            packet, _ = self.receive_packet(SYN_ACK)
+            if packet.flags == SYN_ACK:
+                self.send_packet(ACK, server_address)
                 print("\n\nConnection established\n\n")
-                self.initial_seq_number = self.seq_num = generate_id()
-                self.ack_num = 0
+                self._set_sequence_and_ack_numbers()
                 break
 
     def reliability_send(self, data: bytes) -> None:
+        server_address = (self.server_address, self.server_port)
         while True:
             try:
-                self.send_packet(
-                    (TCPFlag.PSH), (self.server_address, self.server_port), data
-                )
-                packet, _ = self.receive_packet((TCPFlag.ACK))
+                self.send_packet(PSH, server_address, data)
+                packet, _ = self.receive_packet(ACK)
 
             except TimeoutError:
                 print("Timeout occurred, leaving recvfrom")
@@ -53,15 +58,22 @@ class ClientConnectionToServer(TCPSession):
     def shutdown(self) -> None:
         self._teardown()
         print("\n\nConnection Ended\n\n")
+        return
 
     def _teardown(self) -> None:
         """
-        Perform the teardown process for the TCP session.
+        Perform the teardown process for the TCP session for the server.
 
         Args:
-        - is_client_initiator: True if the client is initiating the teardown, False otherwise.
+        None
         """
-        self.send_packet((TCPFlag.FIN), (self.server_address, self.server_port))
-        self.receive_packet((TCPFlag.ACK))  # returns server address
-        self.receive_packet((TCPFlag.FIN))  # returns server address
-        self.send_packet((TCPFlag.ACK), (self.server_address, self.server_port))
+        server_address = (self.server_address, self.server_port)
+        self.send_packet(FIN, server_address)
+        self.receive_packet(ACK)  # returns server address
+        self.receive_packet(FIN)  # returns server address
+        self.send_packet(ACK, server_address)
+        return
+
+    def _set_sequence_and_ack_numbers(self):
+        self.seq_num = 1
+        self.ack_num = 0
