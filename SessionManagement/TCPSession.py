@@ -37,6 +37,14 @@ class TCPSession(ABC):
         # implement timer
 
     @abstractmethod
+    def reliability_send(self, data: bytes) -> None:
+        pass
+
+    @abstractmethod
+    def reliability_receive(self) -> tuple:
+        pass
+
+    @abstractmethod
     def shutdown(self) -> None:
         """
         Shutdown the TCP session.
@@ -61,14 +69,6 @@ class TCPSession(ABC):
         self.server_port: int = address[1]
         self.udp_socket.bind(address)
         self.udp_socket.set_timeout_time(1)
-
-    @abstractmethod
-    def reliability_send(self, data: bytes) -> None:
-        pass
-
-    @abstractmethod
-    def reliability_receive(self) -> tuple:
-        pass
 
     def send_packet(self, flags: tuple, address: tuple, data: bytes = None) -> None:
         """

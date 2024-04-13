@@ -2,6 +2,12 @@ from .TCPSession import TCPSession
 from Model.Packet import Packet
 from Model.TCPFlags import TCPFlag
 
+SYN = (TCPFlag.SYN,)
+SYN_ACK = (TCPFlag.SYN, TCPFlag.ACK)
+ACK = (TCPFlag.ACK,)
+PSH = (TCPFlag.PSH,)
+FIN = (TCPFlag.FIN,)
+
 
 class ServerConnectionToClient(TCPSession):
     def __init__(self):
@@ -25,38 +31,33 @@ class ServerConnectionToClient(TCPSession):
     def accept(self):
         # receive SYN
         packet: Packet
-        packet, address = self.receive_packet((TCPFlag.SYN))
+        packet, address = self.receive_packet(SYN)
         self.client_address, self.client_port = address
-        if (TCPFlag.SYN) == packet.flags:
+        if SYN == packet.flags:
             # sent SYN, ACK
-            self.send_packet(
-                (TCPFlag.SYN, TCPFlag.ACK), (self.client_address, self.client_port)
-            )
+            self.send_packet(SYN_ACK, address)
             while True:
                 # receive ACK
-                packet, address = self.receive_packet((TCPFlag.ACK))
-                if (TCPFlag.ACK) == packet.flags:
+                packet, address = self.receive_packet(ACK)
+                if ACK == packet.flags:
                     print("\n\nConnection established\n\n")
                     self.seq_num = 0
                     self.ack_num = 0
                     break
 
     def reliability_receive(self) -> Packet | None:
-        packet, _ = self.receive_packet((TCPFlag.PSH))
-        #
+        packet, _ = self.receive_packet(PSH)
         # ***TESTING ONLY***
-        #
         self.client_address, self.client_port = _
         self.seq_num = 0
         self.ack_num = 0
-        #
         # ***TESTING ONLY***
-        #
+
         if packet.seq_num == (self.seq_num + 1) and packet.ack_num == self.ack_num:
             self.ack_num += 1
-            self.send_packet((TCPFlag.ACK), (self.client_address, self.client_port))
+            self.send_packet(ACK, (self.client_address, self.client_port))
             return packet
-        self.send_packet((TCPFlag.ACK), (self.client_address, self.client_port))
+        self.send_packet(ACK, (self.client_address, self.client_port))
         return
 
     def reliability_send(self, data: bytes) -> None:
@@ -73,7 +74,7 @@ class ServerConnectionToClient(TCPSession):
         Args:
         - is_client_initiator: True if the client is initiating the teardown, False otherwise.
         """
-        self.receive_packet((TCPFlag.FIN))  # returns server address
-        self.send_packet((TCPFlag.ACK), (self.client_address, self.client_port))
-        self.send_packet((TCPFlag.FIN), (self.client_address, self.client_port))
-        self.receive_packet((TCPFlag.ACK))  # returns server address
+        self.receive_packet(FIN)  # returns server address
+        self.send_packet(ACK, (self.client_address, self.client_port))
+        self.send_packet(FIN, (self.client_address, self.client_port))
+        self.receive_packet(ACK)  # returns server address
