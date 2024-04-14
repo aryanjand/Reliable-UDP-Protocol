@@ -13,7 +13,7 @@ if __name__ == "__main__":
     client = ClientConnectionToServer()
     client.connect(server_ip_address, server_port)
 
-    for chunk in read_file_in_chunks(file):
+    for chunk in read_file_in_chunks(file, 512):
         client.reliability_send(chunk)
     # Sent EOF message
     client.reliability_send("**EOF**".encode())

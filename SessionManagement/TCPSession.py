@@ -70,7 +70,7 @@ class TCPSession(ABC):
         self.udp_socket.bind(address)
         self.udp_socket.set_timeout_time(1)
 
-    def send_packet(self, flags: tuple, address: tuple, data: bytes = None) -> None:
+    def send_packet(self, seq_num: int, ack_num: int, flags: tuple, address: tuple, data: bytes = None) -> None:
         """
         Send a packet over the session with reliability features.
 
@@ -78,7 +78,7 @@ class TCPSession(ABC):
         - flags: The flags for the packet.
         - data: The data to be sent, in bytes.
         """
-        packet = Packet(self.seq_num, self.ack_num, flags, data)
+        packet = Packet(seq_num, ack_num, flags, data)
         packet_serialize = serialize(packet)
         self.udp_socket.sendto(packet_serialize, address)
 

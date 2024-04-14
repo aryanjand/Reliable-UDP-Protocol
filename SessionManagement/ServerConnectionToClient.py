@@ -52,23 +52,23 @@ class ServerConnectionToClient(TCPSession):
         if self._check_packet_numbers(packet):
             self.client_seq_num = packet.seq_num
             print(
-                f"\n\nAfter Receive PSH: Seq Number: {self.client_seq_num}, Ack Number: {self.client_ack_num}\n\n"
+                f"\n\nAfter Receive PSH: Client Seq Number: {self.client_seq_num},Client Ack Number: {self.client_ack_num}\n\n"
             )
             self.client_ack_num += 1
 
-            self.send_packet(ACK, address)
+            self.send_packet(self.client_seq_num, self.client_ack_num,ACK, address)
             print(
-                f"\n\nAfter Sent ACK: Seq Number: {self.client_seq_num}, Ack Number: {self.client_ack_num}\n\n"
+                f"\n\nAfter Sent ACK: Client Seq Number: {self.client_seq_num}, Client Ack Number: {self.client_ack_num}\n\n"
             )
             return packet
-        self.send_packet(ACK, address)
+        self.send_packet(self.client_seq_num, self.client_ack_num, ACK, address)
         return packet
 
     def reliability_send(self, data: bytes) -> None:
         client_address = (self.client_address, self.client_port)
         while True:
             try:
-                self.send_packet(PSH, client_address, data)
+                self.send_packet(self.seq_num, self.ack_num, PSH, client_address, data)
                 print(
                     f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
                 )

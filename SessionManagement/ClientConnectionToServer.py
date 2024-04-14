@@ -41,7 +41,7 @@ class ClientConnectionToServer(TCPSession):
         server_address = (self.server_address, self.server_port)
         while True:
             try:
-                self.send_packet(PSH, server_address, data)
+                self.send_packet(self.seq_num, self.ack_num, PSH, server_address, data)
                 print(
                     f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
                 )
