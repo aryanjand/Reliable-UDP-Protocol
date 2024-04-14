@@ -34,7 +34,6 @@ class TCPSession(ABC):
         self.server_port: int = None
         self.seq_num: int = None
         self.ack_num: int = None
-        # implement timer
 
     @abstractmethod
     def reliability_send(self, data: bytes) -> None:

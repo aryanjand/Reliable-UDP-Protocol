@@ -73,16 +73,16 @@ class ServerConnectionToClient(TCPSession):
                     f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
                 )
                 packet, _ = self.receive_packet(ACK)
-                self.ack_num = packet.ack_num
-                print(
-                    f"\n\nAfter Receive ACK: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
-                )
-                if packet.ack_num == self.seq_num:
-                    self.seq_num += 1
-                    break
-            except ValueError as e:
-                print(f"Error unpacking packet: {e}")
+            except TimeoutError:
+                print("Timeout occurred, leaving recvfrom")
                 continue
+            self.ack_num = packet.ack_num
+            print(
+                f"\n\nAfter Receive ACK: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
+            )
+            if packet.ack_num == self.seq_num:
+                self.seq_num += 1
+                break
 
     def shutdown(self) -> None:
         self._teardown()

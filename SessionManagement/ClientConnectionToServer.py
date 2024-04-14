@@ -60,21 +60,27 @@ class ClientConnectionToServer(TCPSession):
                 break
 
     def reliability_receive(self) -> Packet:
-        packet, address = self.receive_packet(PSH)
+        while True:
+            try:
+                packet, address = self.receive_packet(PSH)
 
-        if self._check_packet_numbers(packet):
-            self.server_seq_num = packet.seq_num
-            print(
-                f"\n\nAfter Receive PSH: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
-            )
-            self.server_ack_num += 1
+            except TimeoutError:
+                print("Timeout occurred, leaving recvfrom")
+                continue
+
+            if self._check_packet_numbers(packet):
+                self.server_seq_num = packet.seq_num
+                print(
+                    f"\n\nAfter Receive PSH: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
+                )
+                self.server_ack_num += 1
+                self.send_packet(self.server_seq_num, self.server_ack_num, ACK, address)
+                print(
+                    f"\n\nAfter Sent Ack: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
+                )
+                return packet
             self.send_packet(self.server_seq_num, self.server_ack_num, ACK, address)
-            print(
-                f"\n\nAfter Sent Ack: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
-            )
             return packet
-        self.send_packet(self.server_seq_num, self.server_ack_num, ACK, address)
-        return packet
 
     def shutdown(self) -> None:
         self._teardown()
