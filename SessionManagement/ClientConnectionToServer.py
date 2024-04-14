@@ -61,18 +61,19 @@ class ClientConnectionToServer(TCPSession):
 
     def reliability_receive(self) -> Packet:
         packet, address = self.receive_packet(PSH)
-        print(
-            f"\n\nAfter Receive PSH: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
-        )
+
         if self._check_packet_numbers(packet):
             self.server_seq_num = packet.seq_num
+            print(
+                f"\n\nAfter Receive PSH: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
+            )
             self.server_ack_num += 1
-            self.send_packet(ACK, address)
+            self.send_packet(self.server_seq_num, self.server_ack_num, ACK, address)
             print(
                 f"\n\nAfter Sent Ack: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
             )
             return packet
-        self.send_packet(ACK, address)
+        self.send_packet(self.server_seq_num, self.server_ack_num, ACK, address)
         return packet
 
     def shutdown(self) -> None:
@@ -98,7 +99,7 @@ class ClientConnectionToServer(TCPSession):
         self.seq_num = 1
         self.ack_num = 0
         self.server_seq_num = 0
-        self.server_seq_num = 0
+        self.server_ack_num = 0
 
     def _check_packet_numbers(self, packet: Packet) -> int:
         return (

@@ -46,17 +46,17 @@ class ServerConnectionToClient(TCPSession):
 
     def reliability_receive(self) -> Packet | None:
         packet, address = self.receive_packet(PSH)
-        if packet.seq_num == 1:
+        if packet.seq_num == 1 and packet.ack_num == 0:
             self._initialize_values(address)
 
         if self._check_packet_numbers(packet):
             self.client_seq_num = packet.seq_num
             print(
-                f"\n\nAfter Receive PSH: Client Seq Number: {self.client_seq_num},Client Ack Number: {self.client_ack_num}\n\n"
+                f"\n\nAfter Receive PSH: Client Seq Number: {self.client_seq_num}, Client Ack Number: {self.client_ack_num}\n\n"
             )
             self.client_ack_num += 1
 
-            self.send_packet(self.client_seq_num, self.client_ack_num,ACK, address)
+            self.send_packet(self.client_seq_num, self.client_ack_num, ACK, address)
             print(
                 f"\n\nAfter Sent ACK: Client Seq Number: {self.client_seq_num}, Client Ack Number: {self.client_ack_num}\n\n"
             )
@@ -73,6 +73,7 @@ class ServerConnectionToClient(TCPSession):
                     f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
                 )
                 packet, _ = self.receive_packet(ACK)
+                self.ack_num = packet.ack_num
                 print(
                     f"\n\nAfter Receive ACK: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
                 )
@@ -109,5 +110,6 @@ class ServerConnectionToClient(TCPSession):
 
     def _check_packet_numbers(self, packet: Packet) -> int:
         return (
-            packet.seq_num == self.client_seq_num + 1 and packet.ack_num == self.ack_num
+            packet.seq_num == self.client_seq_num + 1
+            and packet.ack_num == self.client_ack_num
         )
