@@ -77,7 +77,7 @@ class UDPProxy:
             self.delay_packet(destination)
         print(
             f"Forwarding packet from {address} ({'Server' if destination != SERVER else 'Client'}) "
-            f"to {forward_address} ({'Server' if destination != SERVER else 'Client'})"
+            f"to {forward_address} ({'Server' if destination == SERVER else 'Client'})"
         )
         self.udp_socket.sendto(data, forward_address)
         return

@@ -21,12 +21,12 @@ if __name__ == "__main__":
     server_delay_min, server_delay_max = server_delay_range
 
     proxy = UDPProxy(
-        0.0,
-        1.0,
-        1.0,
-        0.0,
-        (2, 3),
-        (2, 3),
+        client_drop,
+        server_drop,
+        client_delay_chance,
+        server_delay_chance,
+        client_delay_range,
+        server_delay_range,
         (server_ip, server_port),
         (proxy_ip, proxy_port),
     )
