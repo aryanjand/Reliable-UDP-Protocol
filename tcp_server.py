@@ -12,6 +12,11 @@ if __name__ == "__main__":
     while True:
         packet = server.reliability_receive()
 
-    server.reliability_send()
+        print(f"Packet data received on server {packet.data}")
+        if packet.data == "**EOF**".encode():
+            break
+
+    server.reliability_send("File Received".encode())
+
     # server.shutdown()
     server.close()

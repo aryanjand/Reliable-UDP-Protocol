@@ -81,7 +81,6 @@ class TCPSession(ABC):
         packet = Packet(self.seq_num, self.ack_num, flags, data)
         packet_serialize = serialize(packet)
         self.udp_socket.sendto(packet_serialize, address)
-        print(f"Sent {flags} Packet")
 
     def receive_packet(self, flags: tuple) -> Tuple[Packet, tuple]:
         """
@@ -95,13 +94,9 @@ class TCPSession(ABC):
         - client_address: The address (ip, port) from which the data was received.
         """
         bytes_received, address = self.udp_socket.recvfrom()
-        print(f"Client or Server Address {address}")
         packet: Packet = deserialize(bytes_received)
-        print(f"Received: {packet.flags} Packet.")
         if packet.flags == flags:
             return (packet, address)
-        else:
-            raise ValueError(f"Received packet with unexpected flags {packet.flags}")
 
     def close(self) -> None:
         """

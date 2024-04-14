@@ -14,6 +14,8 @@ class ServerConnectionToClient(TCPSession):
         super().__init__()
         self.client_address = None
         self.client_port = None
+        self.client_seq_num = None
+        self.client_ack_num = None
         self.backlog = None
 
     def bind(self, address: tuple):
@@ -44,17 +46,42 @@ class ServerConnectionToClient(TCPSession):
 
     def reliability_receive(self) -> Packet | None:
         packet, address = self.receive_packet(PSH)
-        self._initialize_values(address)  # TESTING ONLY
+        if packet.seq_num == 1:
+            self._initialize_values(address)
 
         if self._check_packet_numbers(packet):
-            self.ack_num += 1
+            self.client_seq_num = packet.seq_num
+            print(
+                f"\n\nAfter Receive PSH: Seq Number: {self.client_seq_num}, Ack Number: {self.client_ack_num}\n\n"
+            )
+            self.client_ack_num += 1
+
             self.send_packet(ACK, address)
+            print(
+                f"\n\nAfter Sent ACK: Seq Number: {self.client_seq_num}, Ack Number: {self.client_ack_num}\n\n"
+            )
             return packet
         self.send_packet(ACK, address)
-        return
+        return packet
 
     def reliability_send(self, data: bytes) -> None:
-        pass
+        client_address = (self.client_address, self.client_port)
+        while True:
+            try:
+                self.send_packet(PSH, client_address, data)
+                print(
+                    f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
+                )
+                packet, _ = self.receive_packet(ACK)
+                print(
+                    f"\n\nAfter Receive ACK: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
+                )
+                if packet.ack_num == self.seq_num:
+                    self.seq_num += 1
+                    break
+            except ValueError as e:
+                print(f"Error unpacking packet: {e}")
+                continue
 
     def shutdown(self) -> None:
         self._teardown()
@@ -75,8 +102,12 @@ class ServerConnectionToClient(TCPSession):
 
     def _initialize_values(self, address: tuple) -> None:
         self.client_address, self.client_port = address
-        self.seq_num = 0
+        self.seq_num = 1
         self.ack_num = 0
+        self.client_seq_num = 0
+        self.client_ack_num = 0
 
     def _check_packet_numbers(self, packet: Packet) -> int:
-        return packet.seq_num == self.seq_num + 1 and packet.ack_num == self.ack_num
+        return (
+            packet.seq_num == self.client_seq_num + 1 and packet.ack_num == self.ack_num
+        )

@@ -12,7 +12,8 @@ FIN = (TCPFlag.FIN,)
 class ClientConnectionToServer(TCPSession):
     def __init__(self):
         super().__init__()
-        self.initial_seq_number: int = None
+        self.server_seq_num = None
+        self.server_ack_num = None
         self.syn_attempts: int = 5
 
     def connect(self, address: str, port: int):
@@ -20,8 +21,7 @@ class ClientConnectionToServer(TCPSession):
         self.server_address = address
         self.server_port = port
         self.udp_socket.set_timeout_time(1)
-        self._set_sequence_and_ack_numbers()  # TESTING
-        # self._three_way_handshake() # TESTING
+        self._initialize_values()
 
     def _three_way_handshake(self):
         attempts = 0
@@ -34,7 +34,7 @@ class ClientConnectionToServer(TCPSession):
             if packet.flags == SYN_ACK:
                 self.send_packet(ACK, server_address)
                 print("\n\nConnection established\n\n")
-                self._set_sequence_and_ack_numbers()
+                self._initialize_values()
                 break
 
     def reliability_send(self, data: bytes) -> None:
@@ -42,6 +42,9 @@ class ClientConnectionToServer(TCPSession):
         while True:
             try:
                 self.send_packet(PSH, server_address, data)
+                print(
+                    f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
+                )
                 packet, _ = self.receive_packet(ACK)
 
             except TimeoutError:
@@ -49,11 +52,28 @@ class ClientConnectionToServer(TCPSession):
                 continue
 
             if packet.ack_num == self.seq_num:
+                self.ack_num = packet.ack_num
+                print(
+                    f"\n\nAfter Receive ACK: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
+                )
                 self.seq_num += 1
                 break
 
-    def reliability_receive(self) -> tuple:
-        pass
+    def reliability_receive(self) -> Packet:
+        packet, address = self.receive_packet(PSH)
+        print(
+            f"\n\nAfter Receive PSH: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
+        )
+        if self._check_packet_numbers(packet):
+            self.server_seq_num = packet.seq_num
+            self.server_ack_num += 1
+            self.send_packet(ACK, address)
+            print(
+                f"\n\nAfter Sent Ack: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
+            )
+            return packet
+        self.send_packet(ACK, address)
+        return packet
 
     def shutdown(self) -> None:
         self._teardown()
@@ -74,6 +94,14 @@ class ClientConnectionToServer(TCPSession):
         self.send_packet(ACK, server_address)
         return
 
-    def _set_sequence_and_ack_numbers(self):
+    def _initialize_values(self):
         self.seq_num = 1
         self.ack_num = 0
+        self.server_seq_num = 0
+        self.server_seq_num = 0
+
+    def _check_packet_numbers(self, packet: Packet) -> int:
+        return (
+            packet.seq_num == self.server_seq_num + 1
+            and packet.ack_num == self.server_ack_num
+        )

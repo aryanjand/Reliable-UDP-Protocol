@@ -15,10 +15,12 @@ if __name__ == "__main__":
 
     for chunk in read_file_in_chunks(file):
         client.reliability_send(chunk)
+    # Sent EOF message
+    client.reliability_send("**EOF**".encode())
     print("File Data Sent")
 
-    client.reliability_receive()
+    # Receive message "File Data Received"
+    packet = client.reliability_receive()
 
     file.close()
-    client.shutdown()
     client.close()
