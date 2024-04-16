@@ -46,6 +46,7 @@ class ServerConnectionToClient(TCPSession):
 
     def reliability_receive(self) -> Packet | None:
         packet, address = self.receive_packet(PSH)
+
         if packet.seq_num == 1 and packet.ack_num == 0:
             self._initialize_values(address)
 
@@ -73,16 +74,26 @@ class ServerConnectionToClient(TCPSession):
                     f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
                 )
                 packet, _ = self.receive_packet(ACK)
+                if not packet:
+                    self.send_packet(
+                        self.client_seq_num, self.client_ack_num, ACK, client_address
+                    )
+            # HERE check for if I receive a ACK or PSH packet.
+            # This is because if the last ACK was dropped that
+            # Then the client didn't receive the ACK and we need to retransmit it again.
+            # So what we can do it is simple retransmit the ACK and sent PSH with
+            # acknowledgement that the data was received.
             except TimeoutError:
                 print("Timeout occurred, leaving recvfrom")
                 continue
-            self.ack_num = packet.ack_num
-            print(
-                f"\n\nAfter Receive ACK: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
-            )
-            if packet.ack_num == self.seq_num:
-                self.seq_num += 1
-                break
+            if packet:
+                self.ack_num = packet.ack_num
+                print(
+                    f"\n\nAfter Receive ACK: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
+                )
+                if packet.ack_num == self.seq_num:
+                    self.seq_num += 1
+                    break
 
     def shutdown(self) -> None:
         self._teardown()
@@ -102,6 +113,7 @@ class ServerConnectionToClient(TCPSession):
         self.receive_packet(ACK)  # returns server address
 
     def _initialize_values(self, address: tuple) -> None:
+        print("With first Packet. Connection Made!\n\n")
         self.client_address, self.client_port = address
         self.seq_num = 1
         self.ack_num = 0

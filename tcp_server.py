@@ -12,7 +12,7 @@ if __name__ == "__main__":
     while True:
         packet = server.reliability_receive()
 
-        print(f"Packet data received on server {packet.data}")
+        # print(f"Packet data received on server {packet.data}")
         if packet.data == "**EOF**".encode():
             break
 

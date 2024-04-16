@@ -43,20 +43,6 @@ class TCPSession(ABC):
     def reliability_receive(self) -> tuple:
         pass
 
-    @abstractmethod
-    def shutdown(self) -> None:
-        """
-        Shutdown the TCP session.
-        """
-        pass
-
-    @abstractmethod
-    def _teardown(self) -> None:
-        """
-        Perform the teardown process for the TCP session.
-        """
-        pass
-
     def bind(self, address: tuple):
         """
         Bind the session to a specified address.
@@ -69,7 +55,14 @@ class TCPSession(ABC):
         self.udp_socket.bind(address)
         self.udp_socket.set_timeout_time(1)
 
-    def send_packet(self, seq_num: int, ack_num: int, flags: tuple, address: tuple, data: bytes = None) -> None:
+    def send_packet(
+        self,
+        seq_num: int,
+        ack_num: int,
+        flags: tuple,
+        address: tuple,
+        data: bytes = None,
+    ) -> None:
         """
         Send a packet over the session with reliability features.
 
@@ -94,11 +87,10 @@ class TCPSession(ABC):
         """
         bytes_received, address = self.udp_socket.recvfrom()
         packet: Packet = deserialize(bytes_received)
+        print("Packet Data ", packet.data)
         if packet.flags == flags:
             return (packet, address)
+        return (None, None)
 
-    def close(self) -> None:
-        """
-        Close the TCP session.
-        """
-        pass
+    def close(self):
+        return
