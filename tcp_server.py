@@ -10,13 +10,16 @@ if __name__ == "__main__":
     # server.accept()
 
     while True:
-        packet = server.reliability_receive()
-
+        try:
+            packet = server.reliability_receive()
+        except TimeoutError:
+            print("Timeout occurred, leaving recvfrom")
+            continue
         # print(f"Packet data received on server {packet.data}")
         if packet.data == "**EOF**".encode():
             break
 
     server.reliability_send("File Received".encode())
 
-    # server.shutdown()
+    server.shutdown()
     server.close()

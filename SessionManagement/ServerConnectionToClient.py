@@ -17,6 +17,9 @@ class ServerConnectionToClient(TCPSession):
         self.client_seq_num = None
         self.client_ack_num = None
         self.backlog = None
+        self.max_retransmissions = 15
+        self.tried_retransmissions = 0
+        self.udp_socket.set_timeout_time(5)
 
     def bind(self, address: tuple):
         """
@@ -67,8 +70,11 @@ class ServerConnectionToClient(TCPSession):
 
     def reliability_send(self, data: bytes) -> None:
         client_address = (self.client_address, self.client_port)
-        while True:
+        current_retransmissions = 0
+        while current_retransmissions <= self.max_retransmissions:
+            self.tried_retransmissions = current_retransmissions
             try:
+                current_retransmissions += 1
                 self.send_packet(self.seq_num, self.ack_num, PSH, client_address, data)
                 print(
                     f"\n\nAfter Sent PSH: Seq Number: {self.seq_num}, Ack Number: {self.ack_num}\n\n"
@@ -96,21 +102,9 @@ class ServerConnectionToClient(TCPSession):
                     break
 
     def shutdown(self) -> None:
-        self._teardown()
+        if self.tried_retransmissions >= self.max_retransmissions:
+            print("Max Retransmissions Attempted!")
         print("\n\nConnection Ended\n\n")
-
-    def _teardown(self) -> None:
-        """
-        Perform the teardown process for the TCP session.
-
-        Args:
-        - is_client_initiator: True if the client is initiating the teardown, False otherwise.
-        """
-        client_address = (self.client_address, self.client_port)
-        self.receive_packet(FIN)  # returns server address
-        self.send_packet(ACK, client_address)
-        self.send_packet(FIN, client_address)
-        self.receive_packet(ACK)  # returns server address
 
     def _initialize_values(self, address: tuple) -> None:
         print("With first Packet. Connection Made!\n\n")
