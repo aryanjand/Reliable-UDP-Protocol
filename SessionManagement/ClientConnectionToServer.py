@@ -49,13 +49,16 @@ class ClientConnectionToServer(TCPSession):
     def reliability_receive(self) -> Packet:
         while True:
             try:
-                packet, address = self.receive_packet(PSH)
+                #  maybe it received another packet, the packet and address are going None
+                #  we need to save address it possible old / none packets come in. That the address might different
+                packet, _ = self.receive_packet(PSH)
+                address = (self.server_address, self.server_port)
 
             except TimeoutError:
                 print("Timeout occurred, leaving recvfrom")
                 continue
 
-            if self._check_packet_numbers(packet):
+            if packet and address and self._check_packet_numbers(packet):
                 self.server_seq_num = packet.seq_num
                 print(
                     f"\n\nAfter Receive PSH: Seq Number: {self.server_seq_num}, Ack Number: {self.server_ack_num}\n\n"
