@@ -2,6 +2,8 @@ from UDPNetworking.UnreliableProxy import UDPProxy
 from Utils.argument_parser import proxy_parse_arguments
 import threading
 import time
+import matplotlib.pyplot as plt
+
 
 if __name__ == "__main__":
     try:
@@ -42,7 +44,35 @@ if __name__ == "__main__":
             thread.start()
             data_bytes, address = proxy.udp_socket.recvfrom()
     finally:
-        print(proxy.packets_delayed_timestamped)
-        print(proxy.packets_dropped_timestamped)
-        print(proxy.packets_received_timestamped)
-        print(proxy.packets_sent_timestamped)
+        delayed_packet_nums = []
+        delayed_packet_timestamps = []
+        for packet in proxy.packets_delayed_timestamped:
+            print("Delayed packets ", packet)
+            delayed_packet_nums.append(packet[1])
+            delayed_packet_timestamps.append(packet[0])
+        dropped_packet_nums = []
+        dropped_packet_timestamps = []
+        for packet in proxy.packets_dropped_timestamped:
+            print("Dropped packets ", packet)
+            dropped_packet_nums.append(packet[1])
+            dropped_packet_timestamps.append(packet[0])
+        received_packet_nums = []
+        received_packet_timestamps = []
+        for packet in proxy.packets_received_timestamped:
+            print("Packets received ", packet)
+            received_packet_nums.append(packet[1])
+            received_packet_timestamps.append(packet[0])
+        sent_packet_nums = []
+        sent_packet_timestamps = []
+        for packet in proxy.packets_sent_timestamped:
+            print("Packets sent ", packet)
+            sent_packet_nums.append(packet[1])
+            sent_packet_timestamps.append(packet[0])
+        plt.plot(sent_packet_timestamps, sent_packet_nums, label="Packets Sent")
+        plt.plot(dropped_packet_timestamps, dropped_packet_nums, label="Packets Dropped")
+        plt.plot(delayed_packet_timestamps, delayed_packet_nums, label="Packets Delayed")
+        plt.plot(received_packet_timestamps, received_packet_nums, label="Packets Received")
+        plt.xlabel('Time since start')
+        plt.ylabel('Number of packets')
+        plt.legend(loc="upper left")
+        plt.show()
