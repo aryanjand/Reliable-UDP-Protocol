@@ -4,11 +4,10 @@ from Utils.file_operations import open_file, read_file_in_chunks
 
 
 if __name__ == "__main__":
-
+    server_ip_address, server_port, file_path, file_mode = client_parse_arguments()
     print("TCP like Client Started!\n")
-    server_ip_address, server_port, file_path = client_parse_arguments()
 
-    file = open_file(file_path)
+    file = open_file(file_path, file_mode)
 
     client = ClientConnectionToServer()
     client.connect(server_ip_address, server_port)
@@ -23,7 +22,7 @@ if __name__ == "__main__":
     print("File Data Sent")
 
     # Receive message "File Data Received"
-    # packet = client.reliability_receive()
+    packet = client.reliability_receive()
 
     file.close()
     client.close()
