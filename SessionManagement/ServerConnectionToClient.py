@@ -33,24 +33,15 @@ class ServerConnectionToClient(TCPSession):
         self.backlog = backlog
         pass
 
-    def accept(self):
-        # receive SYN
-        packet, address = self.receive_packet(SYN)
-        if SYN == packet.flags:
-            # sent SYN, ACK
-            self.send_packet(SYN_ACK, address)
-            while True:
-                # receive ACK
-                packet, address = self.receive_packet(ACK)
-                if ACK == packet.flags:
-                    print("\n\nConnection established\n\n")
-                    self._initialize_values(address)
-                    break
-
     def reliability_receive(self) -> Packet | None:
         packet, address = self.receive_packet(PSH)
 
-        if packet.seq_num == 1 and packet.ack_num == 0:
+        if (
+            packet.seq_num == 1
+            and packet.ack_num == 0
+            and self.client_seq_num == None
+            and self.client_ack_num == None
+        ):
             self._initialize_values(address)
 
         if self._check_packet_numbers(packet):
@@ -66,7 +57,7 @@ class ServerConnectionToClient(TCPSession):
             )
             return packet
         self.send_packet(self.client_seq_num, self.client_ack_num, ACK, address)
-        return packet
+        return None
 
     def reliability_send(self, data: bytes) -> None:
         client_address = (self.client_address, self.client_port)

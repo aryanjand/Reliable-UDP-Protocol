@@ -3,6 +3,7 @@ from Model.Packet import Packet
 from Utils.serializer import serialize, deserialize
 from abc import ABC, abstractmethod
 from typing import Tuple
+import sys
 
 
 class TCPSession(ABC):
@@ -71,6 +72,11 @@ class TCPSession(ABC):
         - data: The data to be sent, in bytes.
         """
         packet = Packet(seq_num, ack_num, flags, data)
+        size_in_bytes = sys.getsizeof(packet)
+        print(
+            f"\nSize of the packet object in bytes: {size_in_bytes}\nPacket data: {packet.data}\n\n"
+        )
+
         packet_serialize = serialize(packet)
         self.udp_socket.sendto(packet_serialize, address)
 

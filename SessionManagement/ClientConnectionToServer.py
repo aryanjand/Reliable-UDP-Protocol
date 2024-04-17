@@ -70,6 +70,7 @@ class ClientConnectionToServer(TCPSession):
                 )
                 return packet
             self.send_packet(self.server_seq_num, self.server_ack_num, ACK, address)
+            
             return packet
 
     def shutdown(self) -> None:
