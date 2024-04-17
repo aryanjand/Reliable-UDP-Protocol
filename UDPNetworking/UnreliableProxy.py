@@ -73,31 +73,33 @@ class UDPProxy:
         bytes_received, client_address = self.udp_socket.recvfrom()
         self.client_address = client_address
         self.packets_received += 1
-        self.packets_received_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time), self.packets_received))
+        self.packets_received_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time).total_seconds(), self.packets_received))
         return (bytes_received, client_address)
 
     def unreliable_forward(self, data, address: tuple) -> None:
         forward_address, destination = self.get_forward_address(address)
+        self.packets_received += 1
+        self.packets_received_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time).total_seconds(), self.packets_received))
         if self.should_drop_packet(destination):
             print(
                 f"Packet dropped from {address} ({'Server' if destination != SERVER else 'Client'})"
             )
             self.packets_dropped += 1
-            self.packets_dropped_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time), self.packets_dropped))
+            self.packets_dropped_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time).total_seconds(), self.packets_dropped))
             return
         if self.should_delay_packet(destination):
             print(
                 f"Packet delayed from {address} ({'Server' if destination != SERVER else 'Client'})"
             )
             self.packets_delayed += 1
-            self.packets_delayed_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time), self.packets_delayed))
+            self.packets_delayed_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time).total_seconds(), self.packets_delayed))
             self.delay_packet(destination)
         print(
             f"Forwarding packet from {address} ({'Server' if destination != SERVER else 'Client'}) "
             f"to {forward_address} ({'Server' if destination == SERVER else 'Client'})"
         )
         self.packets_sent += 1
-        self.packets_sent_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time), self.packets_sent))
+        self.packets_sent_timestamped.append((timedelta(seconds=time.perf_counter()-self.start_time).total_seconds(), self.packets_sent))
         self.udp_socket.sendto(data, forward_address)
         return
 
