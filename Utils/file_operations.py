@@ -2,7 +2,7 @@
 from typing import IO, Any
 
 
-def read_file_in_chunks(file_descriptor, chunk_size=512) -> bytes:
+def read_file_in_chunks(file_descriptor, chunk_size=512) -> str:
     """Read a file in incremental chunks."""
     while True:
         chunk = file_descriptor.read(chunk_size)
@@ -11,9 +11,9 @@ def read_file_in_chunks(file_descriptor, chunk_size=512) -> bytes:
         yield chunk
 
 
-def write_file(file_path, data, chunk_size=512):
+def write_file(file_path, data, file_mode, chunk_size=512):
     """Write data to a file in incremental chunks."""
-    with open(file_path, "a") as file_descriptor:
+    with open(file_path, file_mode) as file_descriptor:
         for i in range(0, len(data), chunk_size):
             file_descriptor.write(data[i : i + chunk_size])
 
