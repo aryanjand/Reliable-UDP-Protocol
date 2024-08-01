@@ -19,7 +19,7 @@ if __name__ == "__main__":
             if packet.data == "**EOF**":
                 break
             write_file(
-                "client-data.txt" if file_mode == "a" else "client-data.bin",
+                "client-data2.txt" if file_mode == "a" else "client-data2.bin",
                 packet.data,
                 file_mode,
             )
